@@ -51,7 +51,7 @@ class _CalculatorBodyState extends State<CalculatorBody> {
                       crossAxisCount: 4,
                       mainAxisSpacing: 10,
                       crossAxisSpacing: 10,
-                      childAspectRatio: 1,
+                      childAspectRatio: 1.2,
                     ),
                     itemBuilder: (context, index) {
                       return ElevatedButton(
@@ -100,11 +100,17 @@ class _CalculatorBodyState extends State<CalculatorBody> {
         '0',
         '=',
         '+',
+        'DEL',
       ];
 
   void onButtonPressed(String buttonText) {
     setState(() {
-      if (buttonText == 'C') {
+      if (buttonText == 'DEL') {
+        if (currentExpression.isNotEmpty) {
+          currentExpression =
+              currentExpression.substring(0, currentExpression.length - 1);
+        }
+      } else if (buttonText == 'C') {
         currentExpression = '';
       } else if (buttonText == '=') {
         if (!isValidExpression(currentExpression)) {
