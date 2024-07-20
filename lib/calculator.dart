@@ -9,6 +9,8 @@ class CalculatorBody extends StatefulWidget {
 }
 
 class _CalculatorBodyState extends State<CalculatorBody> {
+  String currentExpression = '';
+  bool isAnswered = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,9 +29,10 @@ class _CalculatorBodyState extends State<CalculatorBody> {
                   color: hexToColor(screenColor),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Text(
-                  '0',
-                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                child: Text(
+                  currentExpression,
+                  style: const TextStyle(
+                      fontSize: 48, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -47,7 +50,9 @@ class _CalculatorBodyState extends State<CalculatorBody> {
                   ),
                   itemBuilder: (context, index) {
                     return ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        onButtonPressed(buttons[index]);
+                      },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -90,6 +95,28 @@ class _CalculatorBodyState extends State<CalculatorBody> {
         '=',
         '+',
       ];
+
+  onButtonPressed(String buttonText) {
+    setState(() {
+      if (buttonText == 'C') {
+        currentExpression = '';
+      } else if (buttonText == '=') {
+        if (!WrongExpression(currentExpression)) {
+          currentExpression = "Invalid Input";
+        } else {
+          currentExpression = getAnswer(currentExpression);
+          isAnswered = true;
+        }
+      } else {
+        if ((isAnswered == true && !onGoingOperation(currentExpression)) ||
+            currentExpression == "Invalid Input") {
+          currentExpression = '';
+          isAnswered = false;
+        }
+        currentExpression += buttonText;
+      }
+    });
+  }
 }
 
 Color hexToColor(String hex) {
@@ -107,12 +134,37 @@ isEqualButton(String symbols) {
   return buttonColor;
 }
 
-getAnswer() {
-  String iMath = "123/23123/4+100";
+getAnswer(String iMath) {
+  iMath = iMath.replaceAll('x', '*');
   Expression exp = Expression.parse(iMath);
-  final evaluator = const ExpressionEvaluator();
+  final evaluator = ExpressionEvaluator();
   double answer = evaluator.eval(exp, {});
   return answer.toString();
+}
+
+onGoingOperation(String expression) {
+  if (expression != '-' ||
+      expression != 'x' ||
+      expression != '+' ||
+      expression != '/') {
+    return true;
+  }
+  return false;
+}
+
+WrongExpression(String currentExpression) {
+  if (currentExpression.startsWith('/') || currentExpression.startsWith('x')) {
+    return false;
+  }
+
+  if (currentExpression.endsWith('/') ||
+      currentExpression.endsWith('x') ||
+      currentExpression.endsWith('-') ||
+      currentExpression.endsWith('+')) {
+    return false;
+  }
+
+  return true;
 }
 
 const String equalButtonColor = '#DC5F00';
