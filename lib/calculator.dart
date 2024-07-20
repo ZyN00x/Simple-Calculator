@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:expressions/expressions.dart';
 
+const String equalButtonColor = '#DC5F00';
+const String backGroundColor = '#373A40';
+const String screenColor = '#EEEEEE';
+const String buttonColor = '#686D76';
+
 class CalculatorBody extends StatefulWidget {
   const CalculatorBody({super.key});
 
@@ -11,6 +16,7 @@ class CalculatorBody extends StatefulWidget {
 class _CalculatorBodyState extends State<CalculatorBody> {
   String currentExpression = '';
   bool isAnswered = false;
+  Color textColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +39,11 @@ class _CalculatorBodyState extends State<CalculatorBody> {
                 ),
                 child: Text(
                   currentExpression,
-                  style: const TextStyle(
-                      fontSize: 48, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
               ),
             ),
@@ -69,7 +78,7 @@ class _CalculatorBodyState extends State<CalculatorBody> {
                         child: Text(
                           buttons[index],
                           style: const TextStyle(
-                              fontSize: 18, color: Colors.white),
+                              fontSize: 18, color: Colors.black),
                         ),
                       );
                     },
@@ -115,16 +124,21 @@ class _CalculatorBodyState extends State<CalculatorBody> {
       } else if (buttonText == '=') {
         if (!isValidExpression(currentExpression)) {
           currentExpression = "Invalid Input";
+          textColor = Colors.red;
         } else if (currentExpression == '') {
           currentExpression = "No Input";
+          textColor = Colors.red;
         } else {
           currentExpression = getAnswer(currentExpression);
           isAnswered = true;
+          textColor = const Color.fromARGB(255, 4, 143, 9);
         }
       } else {
+        textColor = Colors.black;
         if ((isAnswered && !isOngoingOperation(currentExpression)) ||
             currentExpression == "Invalid Input" ||
-            currentExpression == "No Input") {
+            currentExpression == "No Input" ||
+            currentExpression == "Infinity") {
           currentExpression = '';
           isAnswered = false;
         }
@@ -176,8 +190,3 @@ class _CalculatorBodyState extends State<CalculatorBody> {
     return true;
   }
 }
-
-const String equalButtonColor = '#DC5F00';
-const String backGroundColor = '#373A40';
-const String screenColor = '#EEEEEE';
-const String buttonColor = '#686D76';
