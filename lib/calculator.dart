@@ -11,6 +11,7 @@ class CalculatorBody extends StatefulWidget {
 class _CalculatorBodyState extends State<CalculatorBody> {
   String currentExpression = '';
   bool isAnswered = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,11 +21,12 @@ class _CalculatorBodyState extends State<CalculatorBody> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              flex: 2,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30),
               child: Container(
                 alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.all(20.0),
+                height: 150,
+                padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                   color: hexToColor(screenColor),
                   borderRadius: BorderRadius.circular(15),
@@ -37,37 +39,41 @@ class _CalculatorBodyState extends State<CalculatorBody> {
               ),
             ),
             Expanded(
-              flex: 5,
+              flex: 6,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 20),
-                child: GridView.builder(
-                  itemCount: buttons.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.5,
-                  ),
-                  itemBuilder: (context, index) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        onButtonPressed(buttons[index]);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 30.0),
+                  child: GridView.builder(
+                    itemCount: buttons.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1,
+                    ),
+                    itemBuilder: (context, index) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          onButtonPressed(buttons[index]);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.all(20),
+                          backgroundColor:
+                              hexToColor(ifEqualButton(buttons[index])),
                         ),
-                        padding: const EdgeInsets.all(20),
-                        backgroundColor:
-                            hexToColor(isEqualButton(buttons[index])),
-                      ),
-                      child: Text(
-                        buttons[index],
-                        style:
-                            const TextStyle(fontSize: 40, color: Colors.white),
-                      ),
-                    );
-                  },
+                        child: Text(
+                          buttons[index],
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.white),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -96,75 +102,73 @@ class _CalculatorBodyState extends State<CalculatorBody> {
         '+',
       ];
 
-  onButtonPressed(String buttonText) {
+  void onButtonPressed(String buttonText) {
     setState(() {
       if (buttonText == 'C') {
         currentExpression = '';
       } else if (buttonText == '=') {
-        if (!WrongExpression(currentExpression)) {
+        if (!isValidExpression(currentExpression)) {
           currentExpression = "Invalid Input";
+        } else if (currentExpression == '') {
+          currentExpression = "No Input";
         } else {
           currentExpression = getAnswer(currentExpression);
           isAnswered = true;
         }
       } else {
-        if ((isAnswered == true && !onGoingOperation(currentExpression)) ||
-            currentExpression == "Invalid Input") {
+        if ((isAnswered && !isOngoingOperation(currentExpression)) ||
+            currentExpression == "Invalid Input" ||
+            currentExpression == "No Input") {
           currentExpression = '';
           isAnswered = false;
         }
+
         currentExpression += buttonText;
       }
     });
   }
-}
 
-Color hexToColor(String hex) {
-  hex = hex.replaceAll('#', '');
-  if (hex.length == 6) {
-    hex = 'FF' + hex;
+  Color hexToColor(String hex) {
+    hex = hex.replaceAll('#', '');
+    if (hex.length == 6) {
+      hex = 'FF' + hex;
+    }
+    return Color(int.parse(hex, radix: 16));
   }
-  return Color(int.parse(hex, radix: 16));
-}
 
-isEqualButton(String symbols) {
-  if (symbols == '=') {
-    return equalButtonColor;
+  String ifEqualButton(String symbol) {
+    if (symbol == '=') {
+      return equalButtonColor;
+    }
+    return buttonColor;
   }
-  return buttonColor;
-}
 
-getAnswer(String iMath) {
-  iMath = iMath.replaceAll('x', '*');
-  Expression exp = Expression.parse(iMath);
-  final evaluator = ExpressionEvaluator();
-  double answer = evaluator.eval(exp, {});
-  return answer.toString();
-}
+  String getAnswer(String iMath) {
+    iMath = iMath.replaceAll('x', '*');
+    Expression exp = Expression.parse(iMath);
+    final evaluator = ExpressionEvaluator();
+    var answer = evaluator.eval(exp, {});
+    return answer.toString();
+  }
 
-onGoingOperation(String expression) {
-  if (expression != '-' ||
-      expression != 'x' ||
-      expression != '+' ||
-      expression != '/') {
+  bool isOngoingOperation(String expression) {
+    return !['-', 'x', '+', '/'].contains(expression);
+  }
+
+  bool isValidExpression(String currentExpression) {
+    if (currentExpression.startsWith('/') ||
+        currentExpression.startsWith('x')) {
+      return false;
+    }
+
+    if (currentExpression.endsWith('/') ||
+        currentExpression.endsWith('x') ||
+        currentExpression.endsWith('-') ||
+        currentExpression.endsWith('+')) {
+      return false;
+    }
     return true;
   }
-  return false;
-}
-
-WrongExpression(String currentExpression) {
-  if (currentExpression.startsWith('/') || currentExpression.startsWith('x')) {
-    return false;
-  }
-
-  if (currentExpression.endsWith('/') ||
-      currentExpression.endsWith('x') ||
-      currentExpression.endsWith('-') ||
-      currentExpression.endsWith('+')) {
-    return false;
-  }
-
-  return true;
 }
 
 const String equalButtonColor = '#DC5F00';
